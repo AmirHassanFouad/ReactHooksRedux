@@ -2,18 +2,19 @@ import React from 'react';
 
 export const TodoBody = (props: any) => {
     return (
-        <>
-            <li className={props.itemClass}>
-                <div className="view">
-                    <input
-                        className="toggle"
-                        type="checkbox"
-                        checked={props.isChecked}
-                        onChange={props.checked} />
-                    <label>{props.title}</label>
-                    <button className="destroy" onClick={props.deleteItem}></button>
-                </div>
-            </li>
-        </>
+        <section className="main">
+            <input
+                id="toggle-all"
+                className="toggle-all"
+                type="checkbox"
+                checked={props.todosCount}
+                onChange={props.toggleItems} />
+            <label htmlFor="toggle-all">Mark all as complete</label>
+
+            <ul className="todo-list">
+                {props.todoItems}
+            </ul>
+
+        </section>
     )
 };

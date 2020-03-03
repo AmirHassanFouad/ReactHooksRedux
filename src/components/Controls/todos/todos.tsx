@@ -14,6 +14,7 @@ import {
   toggleAllTodos, toggleTodo, ShowAllTodos, ShowCompleteTodos, removeTodo
 } from '../../../store/actions/todos';
 import { ACTIVE_LINK, COMPLETED_LINK } from '../../../helpers/constants';
+import { TodoItem } from '../todo-item/todo-item';
 
 interface Props {
   location: Location;
@@ -92,6 +93,10 @@ export const TodosComponent: React.FC<Props> = (props: Props) => {
   let clearCompletedTodosButton: any;
   let snackbar;
   let todosFooter;
+  let todoHeader = <TodoHeader
+    placeholder="What needs to be done?"
+    handleNewTodoKeyDown={(e: any) => handleNewTodoKeyDown(e)}
+    autoFocus={true} />;
 
   if (error) {
     snackbar = <SnackBar
@@ -116,7 +121,7 @@ export const TodosComponent: React.FC<Props> = (props: Props) => {
 
   if (todos && todos.length > 0) {
     todoItems = selectedTodos.map((item) => {
-      return <TodoBody
+      return <TodoItem
         key={item.id}
         title={item.title}
         itemClass={item.isCompleted ? "completed" : ""}
@@ -133,30 +138,17 @@ export const TodosComponent: React.FC<Props> = (props: Props) => {
       clicked={(e: string) => getTodosList(e)} />
   }
 
+  let todoBody = < TodoBody
+    todoItems={todoItems}
+    todosCount={todos.filter(t => t.isCompleted).length === todos.length}
+    toggleItems={(event: any) => toggleAllItemsActivation(event.target.checked)} />;
+
   return (
     <>
       {snackbar}
       <section className="todoapp">
-        <TodoHeader
-          placeholder="What needs to be done?"
-          handleNewTodoKeyDown={(e: any) => handleNewTodoKeyDown(e)}
-          autoFocus={true} />
-
-        <section className="main">
-          <input
-            id="toggle-all"
-            className="toggle-all"
-            type="checkbox"
-            checked={todos.filter(t => t.isCompleted).length === todos.length}
-            onChange={(event) => toggleAllItemsActivation(event.target.checked)} />
-          <label htmlFor="toggle-all">Mark all as complete</label>
-
-          <ul className="todo-list">
-            {todoItems}
-          </ul>
-
-        </section>
-
+        {todoHeader}
+        {todoBody}
         {todosFooter}
       </section>
     </>
