@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 
 import { useSelector, useDispatch } from 'react-redux';
 import { TodoState } from '../../../Models/todoState.model';
@@ -11,10 +11,9 @@ import { TodoHeader } from '../todo-header/todo-header';
 import { AppState } from '../../../store/configureStore';
 import {
   loadTodos, ChangeErrorState, ShowActiveTodos, RemoveCompletedTodos, addTodo,
-  toggleAllTodos, toggleTodo, ShowAllTodos, ShowCompleteTodos, removeTodo
+  toggleAllTodos, ShowAllTodos, ShowCompleteTodos
 } from '../../../store/actions/todos';
 import { ACTIVE_LINK, COMPLETED_LINK } from '../../../helpers/constants';
-import { TodoItem } from '../todo-item/todo-item';
 
 interface Props {
   location: Location;
@@ -53,19 +52,6 @@ export const TodosComponent: React.FC<Props> = (props: Props) => {
     }
   }
 
-  const deleteTodo = (itemId: string) => {
-    dispatch(removeTodo(itemId));
-  }
-
-  const toggleItemActivation = (itemId: string, isChecked: boolean) => {
-    dispatch(toggleTodo(itemId, isChecked))
-  }
-
-  const toggleAllItemsActivation = (isChecked: boolean) => {
-    let itemIds: string[] = todos.map(t => t.id);
-    dispatch(toggleAllTodos(itemIds, isChecked))
-  }
-
   const handleNewTodoKeyDown = (event: any) => {
     if (event.keyCode !== ENTER_KEY) {
       return;
@@ -83,13 +69,10 @@ export const TodosComponent: React.FC<Props> = (props: Props) => {
       return itemsId;
     }, []);
 
-    // another way
-    //this.props.todosState.todos.filter(t => t.isCompleted).map(t => t.id)
-
     dispatch(RemoveCompletedTodos(ids));
   }
 
-  let todoItems: any;
+  // let todoItems: any;
   let clearCompletedTodosButton: any;
   let snackbar;
   let todosFooter;
@@ -109,7 +92,7 @@ export const TodosComponent: React.FC<Props> = (props: Props) => {
     snackbar = "";
   }
 
-  if (todos && todos.filter(t => t.isCompleted).length > 0) {
+  if (todos.filter(t => t.isCompleted).length > 0) {
     clearCompletedTodosButton = (
       <button
         className="clear-completed"
@@ -119,18 +102,7 @@ export const TodosComponent: React.FC<Props> = (props: Props) => {
     );
   }
 
-  if (todos && todos.length > 0) {
-    todoItems = selectedTodos.map((item) => {
-      return <TodoItem
-        key={item.id}
-        title={item.title}
-        itemClass={item.isCompleted ? "completed" : ""}
-        inputClass="toggle"
-        isChecked={item.isCompleted}
-        checked={(event: any) => toggleItemActivation(item.id, event.target.checked)}
-        deleteItem={() => deleteTodo(item.id)} />
-    });
-
+  if (todos.length > 0) {
     todosFooter = <TodoFooter
       activeTodosCounter={activeTodosCounter}
       showingNow={showingNow}
@@ -138,10 +110,15 @@ export const TodosComponent: React.FC<Props> = (props: Props) => {
       clicked={(e: string) => getTodosList(e)} />
   }
 
-  let todoBody = < TodoBody
-    todoItems={todoItems}
-    todosCount={todos.filter(t => t.isCompleted).length === todos.length}
-    toggleItems={(event: any) => toggleAllItemsActivation(event.target.checked)} />;
+  const toggleAllItems = useCallback((isCompleted: boolean) => {
+    let itemIds: string[] = todos.map(t => t.id);
+    dispatch(toggleAllTodos(itemIds, isCompleted));  // eslint-disable-next-line
+  }, [dispatch]);
+
+  let todoBody = <TodoBody key="todobody"
+    todoItems={selectedTodos}
+    areAllTodosCompleted={todos.filter(t => t.isCompleted).length === todos.length}
+    toggleItems={toggleAllItems} />;
 
   return (
     <>
@@ -153,4 +130,4 @@ export const TodosComponent: React.FC<Props> = (props: Props) => {
       </section>
     </>
   );
-}
+};
